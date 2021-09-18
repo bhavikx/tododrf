@@ -1,0 +1,35 @@
+{% load crispy_forms_tags %}
+
+<style type="text/css">
+	
+	.form-div{
+		margin: 100px 0 0 520px;
+	}
+	.s-btn{
+		margin-top: 10px;
+		padding: 5px;
+		border: 1px solid black;
+		background: white;
+		color: black;
+		text-decoration: none;
+	}
+</style>
+
+<div class="form-div">
+	<h1>Signup</h1>
+
+	{% for message in messages %}
+		<p>{{message}}</p>
+	{% endfor %}
+	
+	<form method="POST" action="{% url 'signup' %}">
+		
+		{% csrf_token %}
+
+		{{ form|crispy }}
+
+		<input type="submit" value="Signup" class="s-btn">
+		<a href="{% url 'login' %}">Login</a>
+
+	</form>
+</div>

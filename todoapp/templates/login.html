@@ -1,0 +1,36 @@
+<style type="text/css">
+	
+	.form-div{
+		margin: 100px 0 0 520px;
+	}
+	.s-btn{
+		margin-top: 10px;
+		padding: 5px;
+		border: 1px solid black;
+		background: white;
+		color: black;
+		text-decoration: none;
+	}
+</style>
+
+<div class="form-div">
+	<h1>Login</h1>
+	
+	{% for message in messages %}
+		<p>{{message}}</p>
+	{% endfor %}
+
+	<form method="POST" action="{% url 'login' %}">
+		
+		{% csrf_token %}
+		
+		Email <br>
+		<input type="text" name="email"><br>
+		Password <br>
+		<input type="password" name="password"><br>
+
+		<input type="submit" value="Login" class="s-btn">
+		<a href="{% url 'signup' %}">Signup</a>	
+
+	</form>
+</div>
