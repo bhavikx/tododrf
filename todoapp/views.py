@@ -28,12 +28,10 @@ def signupView(request):
 		if form.is_valid():
 			form.save()
 			return render(request, 'login.html')
-
 		else:
 	 		messages.info(request, "Try Again")
 
 	form = SignupForm()
-
 	context = {'form' : form,}
 	return render(request, 'signup.html', context)
 
@@ -47,7 +45,6 @@ def loginView(request):
 	 	if user:
 	 		login(request, user)
 	 		return redirect('home')
-
 	 	else:
 	 		messages.info(request, "Email or Password incorrect... try again.")
 
@@ -82,7 +79,6 @@ class TaskAPI(APIView):
 
 		if not serializer.is_valid():
 			return Response(serializer.errors)
-
 		serializer.save()
 
 		return Response({"completed":task_is_completed})
@@ -90,7 +86,6 @@ class TaskAPI(APIView):
 	def delete(self, request, tid):
 		if not Task.objects.filter(id=tid):
 			return Response({"deleted":"False"})
-
 		task = Task.objects.get(id=tid)
 		task.delete()
 
