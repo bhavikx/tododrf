@@ -8,6 +8,6 @@ class User(AbstractUser):
 		return self.email
 
 class Task(models.Model):
-	user = models.OneToOneField(User, on_delete = models.CASCADE, null=True, blank=True)
+	user = models.ForeignKey(User, on_delete = models.CASCADE, null=True, blank=True)
 	text = models.CharField(max_length=100)
 	is_completed = models.BooleanField(default=False)

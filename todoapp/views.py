@@ -17,14 +17,14 @@ from .serializers import TaskSerializer
 @login_requires
 def homeView(request):
 	form = TaskForm()
-	tasks = Task.objects.filter().order_by('-id')
-	context = {"form" : form, "tasks" : tasks}
-	return render(request, 'home.html', context)
+	tasks = Task.objects.filter(user=request.user).order_by('-id')
+	return render(request, 'home.html', {"form" : form, "tasks" : tasks})
 
 @unauthenticated
 def signupView(request):
 	if request.method == "POST":
 		form = SignupForm(request.POST)
+
 		if form.is_valid():
 			form.save()
 			return render(request, 'login.html')
@@ -58,44 +58,81 @@ def logoutView(request):
     return redirect('login')
 
 class TaskAPI(APIView):
-
-	def get_object(self, id):
-		try:
-			return Task.objects.get(id=id)
-		except Task.DoesNotExist:
-			raise Http404
-
 	def post(self, request):
+		data = request.data
+		serializer = TaskSerializer(data=data)
+		
+		if not serializer.is_valid():
+			return Response(serializer.errors)
 
-		form = TaskForm(request.POST)
-		if form.is_valid:
-			task = form.save()
-
-			task_id = task.id
-			task = task.text
-
-			context = {'task_id' : task_id, 'task' : task}
-
-		return Response(context)
+		serializer.save(user=request.user)
+		return Response({'data' : serializer.data})
 
 	def put(self, request, tid):
-		task = self.get_object(tid)
+		task = Task.objects.get(id=tid)
 
 		if task.is_completed == False:
-			task.is_completed = True
+			data = {"is_completed" : True}
+			task_is_completed = "True"
 		else:
-			task.is_completed = False
+			data = {"is_completed" : False}
+			task_is_completed = "False"
 
-		task.save()
+		serializer = TaskSerializer(instance=task, data=data, partial=True)
 
-		return Response(status=status.HTTP_204_NO_CONTENT)
+		if not serializer.is_valid():
+			return Response(serializer.errors)
 
+		serializer.save()
+
+		return Response({"completed":task_is_completed})
 
 	def delete(self, request, tid):
-		print('tid')
-		print(tid)
+		if not Task.objects.filter(id=tid):
+			return Response({"deleted":"False"})
 
-		task = self.get_object(tid)
+		task = Task.objects.get(id=tid)
 		task.delete()
 
-		return Response(status=status.HTTP_204_NO_CONTENT)
+		return Response({"deleted":"True"})
+
+'''class AddTask(APIView):
+	def post(self, request):
+		data = request.data
+		serializer = TaskSerializer(data=data)
+		
+		if not serializer.is_valid():
+			return Response(serializer.errors)
+
+		serializer.save(user=request.user)
+		return Response({'data' : serializer.data})
+
+class CompTask(APIView):
+	def put(self, request, tid):
+		task = Task.objects.get(id=tid)
+
+		if task.is_completed == False:
+			data = {"is_completed" : True}
+			task_is_completed = "True"
+		else:
+			data = {"is_completed" : False}
+			task_is_completed = "False"
+
+		serializer = TaskSerializer(instance=task, data=data, partial=True)
+
+		if not serializer.is_valid():
+			return Response(serializer.errors)
+
+		serializer.save()
+
+		return Response({"completed":task_is_completed})
+
+class DeleteTask(APIView):
+	def delete(self, request, tid):
+		if not Task.objects.filter(id=tid):
+			return Response({"deleted":"False"})
+
+		task = Task.objects.get(id=tid)
+		task.delete()
+
+		return Response({"deleted":"True"})'''

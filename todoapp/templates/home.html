@@ -33,14 +33,15 @@
 
 <div class="items">
 	{% for task in tasks %}
-		<button id="{{task.id}}" class="delete-b">Delete ❌</button>
-		{% if task.is_completed != True %}
-			<button id="{{task.id}}" class="is_comp">Complete ✔</button> 
-		{% else %}
-			<button id="{{task.id}}" class="is_comp">Completed ✔</button> 
-		{% endif %}
-		👉🏻 {{task.id}}, {{task.text}}
-		<br>
+		<div>
+			<button id="{{task.id}}" class="delete-b">Delete ❌</button>
+			{% if task.is_completed != True %}
+				<button id="{{task.id}}" class="is_comp">Complete..</button> 
+			{% else %}
+				<button id="{{task.id}}" class="is_comp">Completed</button> 
+			{% endif %}
+			👉🏻 {{task.text}}
+		</div>
 	{% endfor %}
 </div>
 
@@ -49,9 +50,7 @@
 	// ADD TASK
 	$(document).on('submit', '#tform', function(event){
 		event.preventDefault();
-
-		console.log("llllll");
-	    
+		
 	    var formData = new FormData(this)
 
     	$.ajax({
@@ -61,9 +60,10 @@
             processData: false,
             contentType: false,
             success : function(data){
-			    console.log(data)
-			    $('#task_text').val("");
-			    $('.items').prepend($("<button>Delete ❌</button> <button>Complete ✔</button> 👉🏻 "+ data.task + "<br>"))
+			    $('#task_text').val("")
+			    $('.items').prepend(
+			    	$('<div><button id="'+data.data.id+'" class="delete-b">Delete ❌</button> <button id="'+data.data.id+'" class="is_comp">Complete..</button> 👉🏻 '+ data.data.text + '</dir>')
+			    	)
 	        }
         });
 
@@ -71,18 +71,22 @@
 
 	// COMPLETE TASK
 	$(document).on('click', '.is_comp', function(){
-		task_id = $(this).attr("id")
-	    console.log(task_id)
-	    console.log(typeof task_id)
+		cur = $(this)
+		task_id = cur.attr("id")
 
         $.ajax({
 	        url : "comp-task/"+task_id,
+	        headers: {
+            	'X-CSRFTOKEN': '{{ csrf_token }}'
+        	},
 	        type : "PUT",
 	        processData: false,
-        	contentType: false,
+            contentType: "json",
 	        success : function(data){
-			    console.log('data')
-			    console.log(data)
+			    if(data.completed == "True")
+			    	cur.text("Completed")
+			    else
+			    	cur.text("Complete..")
 	        }
     	})
 
@@ -90,18 +94,20 @@
 
 	// DELETE TASK
 	$(document).on('click', '.delete-b', function(){
-		task_id = $(this).attr("id")
-	    console.log(task_id)
-	    console.log(typeof task_id)
+		cur = $(this)
+		task_id = cur.attr("id")
 
         $.ajax({
-	        url : "/delete-task/"+task_id,
+	        url : "delete-task/"+task_id,
+	        headers: {
+            	'X-CSRFTOKEN': '{{ csrf_token }}'
+        	},
 	        type : "DELETE",
 	        processData: false,
-        	contentType: false,
+        	contentType: 'json',
 	        success : function(data){
-			    console.log('data')
-			    console.log(data)
+			    if (data.deleted == "True")
+			    	cur.parent().remove()
 	        }
     	})
 
